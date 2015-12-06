@@ -135,7 +135,6 @@ num_sampled = 64    # Number of negative examples to sample.
 graph = tf.Graph()
 
 with graph.as_default():
-
   # Input data.
   train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
   train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
@@ -143,11 +142,16 @@ with graph.as_default():
 
   # Construct the variables.
   embeddings = tf.Variable(
-      tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0))
+      tf.random_uniform([vocabulary_size, embedding_size], -1.0, 1.0), name='embeddings')
   nce_weights = tf.Variable(
       tf.truncated_normal([vocabulary_size, embedding_size],
-                          stddev=1.0 / math.sqrt(embedding_size)))
-  nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
+                          stddev=1.0 / math.sqrt(embedding_size)) , name='nce_weights')
+  nce_biases = tf.Variable(tf.zeros([vocabulary_size]), name='nce_biases')
+
+  # Connect Saver
+  saver = tf.train.Saver({embeddings, nce_weights, nce_biases},max_to_keep=2);
+  # Default saves ll variables
+  # saver = tf.train.Saver() 
 
   # Look up embeddings for inputs.
   embed = tf.nn.embedding_lookup(embeddings, train_inputs)
@@ -160,7 +164,7 @@ with graph.as_default():
                      num_sampled, vocabulary_size))
 
   # Construct the SGD optimizer using a learning rate of 1.0.
-  optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
+  optimizer = tf.train.AdagradOptimizer(1.0).minimize(loss)
 
   # Compute the cosine similarity between minibatch examples and all embeddings.
   norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
@@ -171,7 +175,7 @@ with graph.as_default():
       valid_embeddings, normalized_embeddings, transpose_b=True)
 
 # Step 6: Begin training
-num_steps = 2001
+num_steps = 10001
 
 with tf.Session(graph=graph) as session:
   # We must initialize all variables before we use them.
@@ -209,6 +213,8 @@ with tf.Session(graph=graph) as session:
           log_str = "%s %s," % (log_str, close_word)
         print(log_str)
   final_embeddings = normalized_embeddings.eval()
+  # save the checkpoint
+  saver.save(session, 'embedding_checkpoint.ckpt', global_step=step, latest_filename='final_embedding.ckpt')
 
 # Step 7: Visualize the embeddings.
 
@@ -239,3 +245,5 @@ try:
 
 except ImportError:
   print(ImportError, "Please install sklearn and matplotlib to visualize embeddings.")
+
+
