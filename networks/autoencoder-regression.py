@@ -82,7 +82,7 @@ def expand_labels(targets_labels,outputDim):
 
   for i in range(0,batch_size):
     row = [1] * outputDim
-    row[targets_labels] = 1
+    row[targets_labels[i]] = 1
     targets_feed.append(row)
 
   return targets_feed

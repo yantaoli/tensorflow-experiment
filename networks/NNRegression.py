@@ -60,7 +60,7 @@ def inference(inputs, hidden1_units, hidden2_units, num_outputs):
   global NUM_OUTPUTS 
 
   inputDim = inputs.get_shape().as_list()[-1] # get the last dimension. 
-  NUM_OUTPUTS = NUM_OUTPUTS
+  NUM_OUTPUTS = num_outputs
 
   # Hidden 1
   with tf.name_scope('hidden1') as scope:
