@@ -31,7 +31,7 @@ import tensorflow as tf
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import input_data
-import NNClassifier as nn
+import NNRegression as nn
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -40,7 +40,7 @@ flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
 flags.DEFINE_integer('max_steps', 10000, 'Number of steps to run trainer.')
 
 flags.DEFINE_integer('inputDim', 28*28, 'Input dimension') # 28*28 for MNIST example
-flags.DEFINE_integer('num_classes', 10, 'Number of output classes (dimension)')
+flags.DEFINE_integer('outputDim', 10, 'Number of output classes (dimension)')
 
 flags.DEFINE_integer('hidden1', 128, 'Number of units in hidden layer 1.')
 flags.DEFINE_integer('hidden2', 32, 'Number of units in hidden layer 2.')
@@ -63,17 +63,31 @@ def placeholder_inputs(batch_size):
 
   Returns:
     input_placeholder: Inputs placeholder.
-    labels_placeholder: Labels placeholder.
+    targets_placeholder: targets placeholder.
   """
   # Note that the shapes of the placeholders match the shapes of the full
   # image and label tensors, except the first dimension is now batch_size
   # rather than the full size of the train or test data sets.
   input_placeholder = tf.placeholder(tf.float32, shape=(batch_size,
                                                          FLAGS.inputDim))
-  labels_placeholder = tf.placeholder(tf.int32, shape=(batch_size))
-  return input_placeholder, labels_placeholder
+  targets_placeholder = tf.placeholder(tf.float32, shape=(batch_size, FLAGS.outputDim))
+  return input_placeholder, targets_placeholder
 
-def fill_feed_dict(data_set, inputs_pl, labels_pl):
+def expand_labels(targets_labels,outputDim):
+  """
+  Expand int labels into array. The value at the label index is 1, the rest is -1
+  """
+  batch_size = len(targets_labels)
+  targets_feed = []
+
+  for i in range(0,batch_size):
+    row = [1] * outputDim
+    row[targets_labels] = 1
+    targets_feed.append(row)
+
+  return targets_feed
+
+def fill_feed_dict(data_set, inputs_pl, targets_pl):
   """Fills the feed_dict for training the given step.
 
   A feed_dict takes the form of:
@@ -83,27 +97,31 @@ def fill_feed_dict(data_set, inputs_pl, labels_pl):
   }
 
   Args:
-    data_set: The set of inputs and labels, from input_data.read_data_sets()
+    data_set: The set of inputs and targets, from input_data.read_data_sets()
     inputs_pl: The inputs placeholder, from placeholder_inputs().
-    labels_pl: The labels placeholder, from placeholder_inputs().
+    targets_pl: The targets placeholder, from placeholder_inputs().
 
   Returns:
     feed_dict: The feed dictionary mapping from placeholders to values.
   """
   # Create the feed_dict for the placeholders filled with the next
   # `batch size ` examples.
-  inputs_feed, labels_feed = data_set.next_batch(FLAGS.batch_size,
+  inputs_feed, targets_labels = data_set.next_batch(FLAGS.batch_size,
                                                  FLAGS.fake_data)
+
+  #expand for regression
+  targets_feed = expand_labels(targets_labels, FLAGS.outputDim)
+
   feed_dict = {
       inputs_pl: inputs_feed,
-      labels_pl: labels_feed,
+      targets_pl: targets_feed,
   }
   return feed_dict
 
 def do_eval(sess,
             eval_correct,
             inputs_placeholder,
-            labels_placeholder,
+            targets_placeholder,
             data_set):
   """Runs one evaluation against the full epoch of data.
 
@@ -111,8 +129,8 @@ def do_eval(sess,
     sess: The session in which the model has been trained.
     eval_correct: The Tensor that returns the number of correct predictions.
     inputs_placeholder: The inputs placeholder.
-    labels_placeholder: The labels placeholder.
-    data_set: The set of inputs and labels to evaluate, from
+    targets_placeholder: The targets placeholder.
+    data_set: The set of inputs and targets to evaluate, from
       input_data.read_data_sets().
   """
   # And run one epoch of eval.
@@ -122,7 +140,7 @@ def do_eval(sess,
   for step in xrange(steps_per_epoch):
     feed_dict = fill_feed_dict(data_set,
                                inputs_placeholder,
-                               labels_placeholder)
+                               targets_placeholder)
     true_count += sess.run(eval_correct, feed_dict=feed_dict)
   precision = true_count / num_examples
   print('  Num examples: %d  Num correct: %d  Precision @ 1: %0.04f' %
@@ -130,29 +148,29 @@ def do_eval(sess,
 
 def run_training():
   """Train classifier for a number of steps."""
-  # Get the sets of inputs and labels for training, validation
+  # Get the sets of inputs and targets for training, validation
   data_sets = input_data.read_data_sets(FLAGS.train_dir, FLAGS.fake_data)
 
   # Tell TensorFlow that the model will be built into the default Graph.
   with tf.Graph().as_default():
-    # Generate placeholders for the inputs and labels.
-    inputs_placeholder, labels_placeholder = placeholder_inputs(
+    # Generate placeholders for the inputs and targets.
+    inputs_placeholder, targets_placeholder = placeholder_inputs(
         FLAGS.batch_size)
 
     # Build a Graph that computes predictions from the inference model.
     logits = nn.inference(inputs_placeholder,
                              FLAGS.hidden1,
                              FLAGS.hidden2,
-                             FLAGS.num_classes)
+                             FLAGS.outputDim)
 
     # Add to the Graph the Ops for loss calculation.
-    loss = nn.loss(logits, labels_placeholder)
+    loss = nn.loss(logits, targets_placeholder)
 
     # Add to the Graph the Ops that calculate and apply gradients.
     train_op = nn.training(loss, FLAGS.learning_rate)
 
-    # Add the Op to compare the logits to the labels during evaluation.
-    eval_correct = nn.evaluation(logits, labels_placeholder)
+    # Add the Op to compare the logits to the targets during evaluation.
+    eval_correct = nn.evaluation(logits, targets_placeholder)
 
     # Build the summary operation based on the TF collection of Summaries.
     summary_op = tf.merge_all_summaries()
@@ -175,11 +193,11 @@ def run_training():
     for step in xrange(FLAGS.max_steps):
       start_time = time.time()
 
-      # Fill a feed dictionary with the actual set of inputs and labels
+      # Fill a feed dictionary with the actual set of inputs and targets
       # for this particular training step.
       feed_dict = fill_feed_dict(data_sets.train,
                                  inputs_placeholder,
-                                 labels_placeholder)
+                                 targets_placeholder)
 
       # Run one step of the model.  The return values are the activations
       # from the `train_op` (which is discarded) and the `loss` Op.  To
@@ -207,21 +225,21 @@ def run_training():
         do_eval(sess,
                 eval_correct,
                 inputs_placeholder,
-                labels_placeholder,
+                targets_placeholder,
                 data_sets.train)
         # Evaluate against the validation set.
         print('Validation Data Eval:')
         do_eval(sess,
                 eval_correct,
                 inputs_placeholder,
-                labels_placeholder,
+                targets_placeholder,
                 data_sets.validation)
         # Evaluate against the test set.
         print('Test Data Eval:')
         do_eval(sess,
                 eval_correct,
                 inputs_placeholder,
-                labels_placeholder,
+                targets_placeholder,
                 data_sets.test)
 
 def main(_):
