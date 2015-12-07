@@ -15,13 +15,17 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import division
 
 import tensorflow.python.platform
 
 import collections
 import math
 import numpy as np
+
 import os
+import time
+
 import random
 import tensorflow as tf
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -138,7 +142,8 @@ def run_training():
     # Build a Graph that computes predictions from the inference model.
     logits = BasicANN.inference(inputs_placeholder,
                              FLAGS.hidden1,
-                             FLAGS.hidden2)
+                             FLAGS.hidden2,
+                             FLAGS.num_classes)
 
     # Add to the Graph the Ops for loss calculation.
     loss = BasicANN.loss(logits, labels_placeholder)

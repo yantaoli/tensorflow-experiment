@@ -56,8 +56,11 @@ def inference(inputs, hidden1_units, hidden2_units, num_classes):
   """
   Get the last dimension of input placeholder because for FNN, the input is (batch_size, inputDim)
   """
-  global inputDim = inputs.get_shape().as_list()[-1] # get the last dimension. 
-  global NUM_CLASSES = num_classes
+  global inputDim 
+  global NUM_CLASSES 
+
+  inputDim = inputs.get_shape().as_list()[-1] # get the last dimension. 
+  NUM_CLASSES = num_classes
 
   # Hidden 1
   with tf.name_scope('hidden1') as scope:
