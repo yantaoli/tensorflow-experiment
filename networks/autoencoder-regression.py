@@ -134,17 +134,17 @@ def do_eval(sess,
       input_data.read_data_sets().
   """
   # And run one epoch of eval.
-  true_count = 0  # Counts the number of correct predictions.
+  loss = 0  # Counts the number of correct predictions.
   steps_per_epoch = data_set.num_examples // FLAGS.batch_size
   num_examples = steps_per_epoch * FLAGS.batch_size
   for step in xrange(steps_per_epoch):
     feed_dict = fill_feed_dict(data_set,
                                inputs_placeholder,
                                targets_placeholder)
-    true_count += sess.run(eval_correct, feed_dict=feed_dict)
-  precision = true_count / num_examples
-  print('  Num examples: %d  Num correct: %d  Precision @ 1: %0.04f' %
-        (num_examples, true_count, precision))
+    loss += sess.run(eval_correct, feed_dict=feed_dict)
+  loss = loss / num_examples
+  print('  Num examples: %d L2 Loss: %0.00004f' %
+        (num_examples, loss))
 
 def run_training():
   """Train classifier for a number of steps."""
@@ -158,19 +158,19 @@ def run_training():
         FLAGS.batch_size)
 
     # Build a Graph that computes predictions from the inference model.
-    logits = nn.inference(inputs_placeholder,
+    acts = nn.inference(inputs_placeholder,
                              FLAGS.hidden1,
                              FLAGS.hidden2,
                              FLAGS.outputDim)
 
     # Add to the Graph the Ops for loss calculation.
-    loss = nn.loss(logits, targets_placeholder)
+    loss = nn.loss(acts, targets_placeholder)
 
     # Add to the Graph the Ops that calculate and apply gradients.
     train_op = nn.training(loss, FLAGS.learning_rate)
 
-    # Add the Op to compare the logits to the targets during evaluation.
-    eval_correct = nn.evaluation(logits, targets_placeholder)
+    # Add the Op to compare the acts to the targets during evaluation.
+    eval_correct = nn.evaluation(acts, targets_placeholder)
 
     # Build the summary operation based on the TF collection of Summaries.
     summary_op = tf.merge_all_summaries()
