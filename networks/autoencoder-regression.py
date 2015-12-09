@@ -109,8 +109,8 @@ def fill_feed_dict(data_set, inputs_pl, targets_pl):
   inputs_feed, targets_labels = data_set.next_batch(FLAGS.batch_size,
                                                  FLAGS.fake_data)
 
-  #expand for regression
-  targets_feed = expand_labels(targets_labels, FLAGS.outputDim)
+  #expand for regression - NOT necessary by using one-hot flag = TRUE
+  #targets_feed = expand_labels(targets_labels, FLAGS.outputDim)
 
   feed_dict = {
       inputs_pl: inputs_feed,
@@ -149,7 +149,7 @@ def do_eval(sess,
 def run_training():
   """Train classifier for a number of steps."""
   # Get the sets of inputs and targets for training, validation
-  data_sets = input_data.read_data_sets(FLAGS.train_dir, FLAGS.fake_data)
+  data_sets = input_data.read_data_sets(FLAGS.train_dir, FLAGS.fake_data, one_hot = TRUE)
 
   # Tell TensorFlow that the model will be built into the default Graph.
   with tf.Graph().as_default():

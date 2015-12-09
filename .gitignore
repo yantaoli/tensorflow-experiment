@@ -1,3 +1,6 @@
+# ignore kaggle raw file
+kaggle/**/data/*.csv
+
 #################
 ## Eclipse
 #################
