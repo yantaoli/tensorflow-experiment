@@ -12,7 +12,7 @@ import os
 import numpy as np
 
 import csv
-import input_tokenization
+import input_util
 
 PATH = '../data/'
 
@@ -26,8 +26,70 @@ def extract_csv(filename, hasHeader = True):
       if not isHeaderSet:
         header = row
         isHeaderSet = True
-      data.append(row)
+      else:
+        data.append(row)
     return np.array(data), header
+
+class UserDataSet(object):
+  def __init__(self, train_users, train_users_header, one_hot=False):
+    self._train_users = train_users
+    self._train_users_header = train_users_header
+
+    self._num_examples = train_users.shape[0]
+
+    self.train_users_str2ind, self.train_users_ind2str = input_util.tokenizeByColumn(train_users,[4,6,8,9,10,11,12,13,14,15])
+    input_util.convertToNum(train_users, [2,5,7], default = 0)
+    input_util.convertDate(train_users, [1,3], baseDateStr = '1/1/2010', default = -1)
+    input_util.columnNormalizer(train_users, [1,2,3,5,7], minVal = 0, maxVal = 10)
+
+    self._trainInput = train_users[:, range(1,15)]
+    self._trainOutput = train_users[:, 15]
+
+    self._epochs_completed = 0
+    self._index_in_epoch = 0
+
+  # @property
+  # def images(self):
+  #   return self._images
+
+  # @property
+  # def labels(self):
+  #   return self._labels
+
+  # @property
+  # def num_examples(self):
+  #   return self._num_examples
+
+  # @property
+  # def epochs_completed(self):
+  #   return self._epochs_completed
+
+  # def next_batch(self, batch_size, fake_data=False):
+  #   """Return the next `batch_size` examples from this data set."""
+  #   if fake_data:
+  #     fake_image = [1] * 784
+  #     if self.one_hot:
+  #       fake_label = [1] + [0] * 9
+  #     else:
+  #       fake_label = 0
+  #     return [fake_image for _ in xrange(batch_size)], [
+  #         fake_label for _ in xrange(batch_size)]
+  #   start = self._index_in_epoch
+  #   self._index_in_epoch += batch_size
+  #   if self._index_in_epoch > self._num_examples:
+  #     # Finished epoch
+  #     self._epochs_completed += 1
+  #     # Shuffle the data
+  #     perm = numpy.arange(self._num_examples)
+  #     numpy.random.shuffle(perm)
+  #     self._images = self._images[perm]
+  #     self._labels = self._labels[perm]
+  #     # Start next epoch
+  #     start = 0
+  #     self._index_in_epoch = batch_size
+  #     assert batch_size <= self._num_examples
+  #   end = self._index_in_epoch
+  #   return self._images[start:end], self._labels[start:end]
 
 def read_data_sets():
   class DataSets(object):
@@ -40,15 +102,16 @@ def read_data_sets():
   COUNTRIES = 'countries.csv'
   AGE_GENDER_BKTS = 'age_gender_bkts.csv'
 
-  data_sets.train_users, _ = extract_csv(TRAIN_USERS)
+  train_users, train_header= extract_csv(TRAIN_USERS)
+
+  # process training data
+  data_sets.trainData = UserDataSet(train_users, train_header)
+
   data_sets.test_users, _ = extract_csv(TEST_USERS)
-  #data_sets.sessions, _ = extract_csv(SESSIONS)
+  # data_sets.sessions, _ = extract_csv(SESSIONS)
   data_sets.countries, _ = extract_csv(COUNTRIES)
   data_sets.age_gender_bkts, _ = extract_csv(AGE_GENDER_BKTS)
-
-  # perform inplace tokenization
-  data_sets.train_users_str2ind, data_sets.train_users_ind2str = input_tokenization.tokenizeByColumn(data_sets.train_users,[0,4,6,8,9,10,11,12,13,14,15],'train_users')
-
+  
   return data_sets
 
 def read_data_set_session():
@@ -58,5 +121,5 @@ def read_data_set_session():
 
 
 # testing function
-def test():
-  data_sets = read_data_sets()
+def read():
+  return read_data_sets()
