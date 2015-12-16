@@ -76,8 +76,8 @@ class UserDataSet(object):
       self._epochs_completed += 1
       
       # Shuffle the data
-      perm = numpy.arange(self._num_examples)
-      numpy.random.shuffle(perm)
+      perm = np.arange(self._num_examples)
+      np.random.shuffle(perm)
 
       self._trainInput = self._trainInput[perm]
       self._trainOutput = self._trainOutput[perm]
