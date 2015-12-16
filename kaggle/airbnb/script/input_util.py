@@ -10,27 +10,29 @@ import numpy as np
 from dateutil.parser import parse
 
 # TODO, making it more robust
-def num(s):
+def num(s, default):
     try:
-      return int(s)
-    except ValueError:
       return float(s)
+    except ValueError:
+      return default
 
-def convertToNum(nparray, columnList, default = 0):
+def convertToNum(nparray, columnList, default = 0.0):
   npSubArray = nparray[:,columnList]
-  for (x, y), val in np.ndenumerate(npSubArray):
-    if not val:
-      npSubArray[x,y] = default
-    elif isinstance(val, basestring):
-      npSubArray[x,y] = num(val)
+  g = np.vectorize(num)
+  nparray[:,columnList] = g(npSubArray, default)
+
+  # for (x, y), val in np.ndenumerate(npSubArray):
+  #   npSubArray[x,y] = num(val, default)
+
+
   return nparray
 
 '''
   delta type supports: Day, Sec
 '''
-def parseDateIntoDelta(dateStr, baseDateStr, default, deltaType):
+def parseDateIntoDelta(dateStr, baseDate, default, deltaType):
   try:
-    delta = parse(dateStr) - parse(baseDateStr)
+    delta = parse(dateStr) - baseDate
     if deltaType == 'Day':
       return delta.days
     else:
@@ -43,19 +45,25 @@ def parseDateIntoDelta(dateStr, baseDateStr, default, deltaType):
 '''
 def convertDate(nparray, columnList, baseDateStr = '1/1/2010', default = -1, deltaType = 'Day'):
   npSubArray = nparray[:,columnList]
-  for (x, y), val in np.ndenumerate(npSubArray):
-    npSubArray[x,y] = parseDateIntoDelta(val, baseDateStr, default, deltaType)
-
+  # lambda implementation here
+  baseDate = parse(baseDateStr)
+  g = np.vectorize(parseDateIntoDelta)
+  nparray[:,columnList] = g(npSubArray,baseDate,default, deltaType)
   return nparray
 
 # inplace normalization
-# TODO fix      return umr_minimum(a, axis, None, out, keepdims)
-#               TypeError: cannot perform reduce with flexible type
 def columnNormalizer(nparray, columnList, minVal = 0, maxVal = 10):
-  npSubArray = nparray[:,columnList]
+  npSubArray = nparray[:,columnList].astype(float, copy = False)
+  
   npSubArrayMin = npSubArray.min(axis=0)
-  npSubArraySpan = npSubArray.max(axis=0) - npSubArrayMin
-  nparray[:,columnList] = (npSubArray - npSubArrayMin) / npSubArraySpan * (maxVal - minVal) + minVal
+  npSubArrayMax = npSubArray.max(axis=0)
+  
+  npSubArray -= npSubArrayMin
+  npSubArray *= maxVal - minVal
+  npSubArray /= npSubArrayMax - npSubArrayMin
+  npSubArray += minVal
+
+  nparray[:,columnList] = npSubArray
   return nparray
 
 def tokenizeList(nparray):

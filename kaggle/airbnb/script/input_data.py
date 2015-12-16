@@ -38,12 +38,14 @@ class UserDataSet(object):
     self._num_examples = train_users.shape[0]
 
     self.train_users_str2ind, self.train_users_ind2str = input_util.tokenizeByColumn(train_users,[4,6,8,9,10,11,12,13,14,15])
-    input_util.convertToNum(train_users, [2,5,7], default = 0)
+    input_util.convertToNum(train_users, [2,5,7], default = 0.0)
     input_util.convertDate(train_users, [1,3], baseDateStr = '1/1/2010', default = -1)
-    input_util.columnNormalizer(train_users, [1,2,3,5,7], minVal = 0, maxVal = 10)
+    input_util.columnNormalizer(train_users, [1,3], minVal = 0.0, maxVal = 10.0)
+    input_util.columnNormalizer(train_users, [2,5,7], minVal = 0.0, maxVal = 10.0)
 
-    self._trainInput = train_users[:, range(1,15)]
-    self._trainOutput = train_users[:, 15]
+
+    self._trainInput = train_users[:, range(1,15)].astype(float)
+    self._trainOutput = train_users[:, 15].astype(int)
 
     self._epochs_completed = 0
     self._index_in_epoch = 0

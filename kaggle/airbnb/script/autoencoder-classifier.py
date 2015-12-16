@@ -39,7 +39,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
 flags.DEFINE_integer('max_steps', 10000, 'Number of steps to run trainer.')
 
-flags.DEFINE_integer('inputDim', 28*28, 'Input dimension') # 28*28 for MNIST example
+flags.DEFINE_integer('inputDim', 14, 'Input dimension') # 28*28 for MNIST example
 flags.DEFINE_integer('num_classes', 10, 'Number of output classes (dimension)')
 
 flags.DEFINE_integer('hidden1', 128, 'Number of units in hidden layer 1.')
