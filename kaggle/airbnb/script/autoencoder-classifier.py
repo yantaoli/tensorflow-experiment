@@ -37,20 +37,18 @@ import NNClassifier as nn
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
-flags.DEFINE_integer('max_steps', 10000, 'Number of steps to run trainer.')
+flags.DEFINE_integer('max_steps', 1000, 'Number of steps to run trainer.')
 
 flags.DEFINE_integer('inputDim', 14, 'Input dimension') # 28*28 for MNIST example
-flags.DEFINE_integer('num_classes', 10, 'Number of output classes (dimension)')
+flags.DEFINE_integer('num_classes', 12, 'Number of output classes (dimension)')
 
-flags.DEFINE_integer('hidden1', 128, 'Number of units in hidden layer 1.')
-flags.DEFINE_integer('hidden2', 32, 'Number of units in hidden layer 2.')
+flags.DEFINE_integer('hidden1', 20, 'Number of units in hidden layer 1.')
+flags.DEFINE_integer('hidden2', 20, 'Number of units in hidden layer 2.')
 
 flags.DEFINE_integer('batch_size', 10, 'Batch size.  '
                      'Must divide evenly into the dataset sizes.')
 
 flags.DEFINE_string('train_dir', 'data', 'Directory to put the training data.')
-flags.DEFINE_boolean('fake_data', False, 'If true, uses fake data '
-                     'for unit testing.')
 
 def placeholder_inputs(batch_size):
   """Generate placeholder variables to represent the the input tensors.
@@ -92,8 +90,8 @@ def fill_feed_dict(data_set, inputs_pl, labels_pl):
   """
   # Create the feed_dict for the placeholders filled with the next
   # `batch size ` examples.
-  inputs_feed, labels_feed = data_set.next_batch(FLAGS.batch_size,
-                                                 FLAGS.fake_data)
+  inputs_feed, labels_feed = data_set.next_batch(FLAGS.batch_size)
+
   feed_dict = {
       inputs_pl: inputs_feed,
       labels_pl: labels_feed,
@@ -131,8 +129,8 @@ def do_eval(sess,
 def run_training():
   """Train classifier for a number of steps."""
   # Get the sets of inputs and labels for training, validation
-  data_sets = input_data.read_data_sets(FLAGS.train_dir, FLAGS.fake_data)
-
+  data_sets = input_data.read_data_sets(FLAGS.train_dir)
+  trainData = data_sets.trainData
   # Tell TensorFlow that the model will be built into the default Graph.
   with tf.Graph().as_default():
     # Generate placeholders for the inputs and labels.
@@ -177,7 +175,7 @@ def run_training():
 
       # Fill a feed dictionary with the actual set of inputs and labels
       # for this particular training step.
-      feed_dict = fill_feed_dict(data_sets.train,
+      feed_dict = fill_feed_dict(trainData,
                                  inputs_placeholder,
                                  labels_placeholder)
 
@@ -208,21 +206,21 @@ def run_training():
                 eval_correct,
                 inputs_placeholder,
                 labels_placeholder,
-                data_sets.train)
+                trainData)
         # Evaluate against the validation set.
-        print('Validation Data Eval:')
-        do_eval(sess,
-                eval_correct,
-                inputs_placeholder,
-                labels_placeholder,
-                data_sets.validation)
-        # Evaluate against the test set.
-        print('Test Data Eval:')
-        do_eval(sess,
-                eval_correct,
-                inputs_placeholder,
-                labels_placeholder,
-                data_sets.test)
+        # print('Validation Data Eval:')
+        # do_eval(sess,
+        #         eval_correct,
+        #         inputs_placeholder,
+        #         labels_placeholder,
+        #         data_sets.validation)
+        # # Evaluate against the test set.
+        # print('Test Data Eval:')
+        # do_eval(sess,
+        #         eval_correct,
+        #         inputs_placeholder,
+        #         labels_placeholder,
+        #         data_sets.test)
 
 def main(_):
   run_training()
