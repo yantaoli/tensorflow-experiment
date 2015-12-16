@@ -129,7 +129,7 @@ def do_eval(sess,
 def run_training():
   """Train classifier for a number of steps."""
   # Get the sets of inputs and labels for training, validation
-  data_sets = input_data.read_data_sets(FLAGS.train_dir)
+  data_sets = input_data.read_data_sets()
   trainData = data_sets.trainData
   # Tell TensorFlow that the model will be built into the default Graph.
   with tf.Graph().as_default():
