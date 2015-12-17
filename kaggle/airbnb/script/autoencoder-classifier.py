@@ -37,7 +37,10 @@ import NNClassifier as nn
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
+
 flags.DEFINE_integer('max_steps', 20000, 'Number of steps to run trainer.')
+flags.DEFINE_integer('verbose_steps', 200, 'Number of steps to return training loss.')
+flags.DEFINE_integer('checkpoint_steps', 1000, 'Number of steps to create a checkpoint.')
 
 flags.DEFINE_integer('inputDim', 14, 'Input dimension') # 28*28 for MNIST example
 flags.DEFINE_integer('num_classes', 12, 'Number of output classes (dimension)')
@@ -98,6 +101,16 @@ def fill_feed_dict(data_set, inputs_pl, labels_pl):
   }
   return feed_dict
 
+def output_test(sess,label, inputs_placeholder,data_set):
+  """Run one round on the output, and optionally output to a csv
+  """
+  feed_dict = {
+    inputs_pl : data_set.input(),
+  }
+
+  outputArray = sess.run(label, feed_dict=feed_dict)
+  return outputArray
+
 def do_eval(sess,
             eval_correct,
             inputs_placeholder,
@@ -131,6 +144,8 @@ def run_training():
   # Get the sets of inputs and labels for training, validation
   data_sets = input_data.read_data_sets()
   trainData = data_sets.trainData
+  testData = data_sets.trainData
+
   # Tell TensorFlow that the model will be built into the default Graph.
   with tf.Graph().as_default():
     # Generate placeholders for the inputs and labels.
@@ -142,6 +157,9 @@ def run_training():
                              FLAGS.hidden1,
                              FLAGS.hidden2,
                              FLAGS.num_classes)
+
+    # Add label to the Graph the Ops for feed forward output.
+    label = nn.output(logits)
 
     # Add to the Graph the Ops for loss calculation.
     loss = nn.loss(logits, labels_placeholder)
@@ -190,7 +208,7 @@ def run_training():
       duration = time.time() - start_time
 
       # Write the summaries and print an overview fairly often.
-      if step % 100 == 0:
+      if step % FLAGS.verbose_steps == 0:
         # Print status to stdout.
         print('Step %d: loss = %.2f (%.3f sec)' % (step, loss_value, duration))
         # Update the events file.
@@ -198,7 +216,7 @@ def run_training():
         summary_writer.add_summary(summary_str, step)
 
       # Save a checkpoint and evaluate the model periodically.
-      if (step + 1) % 1000 == 0 or (step + 1) == FLAGS.max_steps:
+      if (step + 1) % FLAGS.checkpoint_steps == 0 or (step + 1) == FLAGS.max_steps:
         saver.save(sess, FLAGS.train_dir, global_step=step)
         # Evaluate against the training set.
         print('Training Data Eval:')
@@ -207,6 +225,13 @@ def run_training():
                 inputs_placeholder,
                 labels_placeholder,
                 trainData)
+
+        outputArray = output_test(sess,
+                label,
+                inputs_placeholder,
+                testData)
+
+        input_data.write_csv('testOutput.csv', outputArray)
         # Evaluate against the validation set.
         # print('Validation Data Eval:')
         # do_eval(sess,

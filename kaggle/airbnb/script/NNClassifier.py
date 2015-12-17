@@ -147,6 +147,13 @@ def training(loss, learning_rate):
   train_op = optimizer.minimize(loss, global_step=global_step)
   return train_op
 
+def output(logits):
+  """convert a list of logits into a list of integers
+    Args:
+      logits: Logits tensor, float - [batch_size, NUM_CLASSES].
+  """
+  label = tf.argmax(logits, 0, name='OutputLabel')
+  return label
 
 def evaluation(logits, labels):
   """Evaluate the quality of the logits at predicting the label.

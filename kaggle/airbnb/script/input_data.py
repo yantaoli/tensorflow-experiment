@@ -16,6 +16,18 @@ import input_util
 
 PATH = '../data/'
 
+def write_csv(filename, data):
+  with open(PATH + filename, 'wb') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+    for x in range(data.get_shape().as_list()[0]): 
+    #for x in range(data.size):
+      writer.writerow([data[x]])
+
+  print('CSV data written' + PATH + filename)
+
+
 def extract_csv(filename, hasHeader = True):
   with open(PATH + filename, 'rb') as csvfile:
     cvsreader = csv.reader(csvfile, delimiter=',')
@@ -44,19 +56,19 @@ class UserDataSet(object):
     input_util.columnNormalizer(train_users, [2,5,7], minVal = 0.0, maxVal = 10.0)
 
 
-    self._trainInput = train_users[:, range(1,15)].astype(float)
-    self._trainOutput = train_users[:, 15].astype(int)
+    self._input = train_users[:, range(1,15)].astype(float)
+    self._output = train_users[:, 15].astype(int)
 
     self._epochs_completed = 0
     self._index_in_epoch = 0
 
   @property
   def input(self):
-    return self._trainInput
+    return self._input
 
   @property
   def output(self):
-    return self._trainOutput
+    return self._output
 
   @property
   def num_examples(self):
@@ -79,8 +91,8 @@ class UserDataSet(object):
       perm = np.arange(self._num_examples)
       np.random.shuffle(perm)
 
-      self._trainInput = self._trainInput[perm]
-      self._trainOutput = self._trainOutput[perm]
+      self._input = self._input[perm]
+      self._output = self._output[perm]
 
       # Start next epoch
       start = 0
@@ -88,7 +100,7 @@ class UserDataSet(object):
       assert batch_size <= self._num_examples
 
     end = self._index_in_epoch
-    return self._trainInput[start:end], self._trainOutput[start:end]
+    return self._input[start:end], self._output[start:end]
 
 def read_data_sets():
   class DataSets(object):
@@ -102,11 +114,12 @@ def read_data_sets():
   AGE_GENDER_BKTS = 'age_gender_bkts.csv'
 
   train_users, train_header= extract_csv(TRAIN_USERS)
-
   # process training data
   data_sets.trainData = UserDataSet(train_users, train_header)
 
-  data_sets.test_users, _ = extract_csv(TEST_USERS)
+  test_users, test_headers = extract_csv(TEST_USERS)
+  data_sets.testData = UserDataSet(test_users, test_headers)
+
   # data_sets.sessions, _ = extract_csv(SESSIONS)
   data_sets.countries, _ = extract_csv(COUNTRIES)
   data_sets.age_gender_bkts, _ = extract_csv(AGE_GENDER_BKTS)
