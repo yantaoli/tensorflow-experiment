@@ -66,35 +66,42 @@ def columnNormalizer(nparray, columnList, minVal = 0, maxVal = 10):
   nparray[:,columnList] = npSubArray
   return nparray
 
-def tokenizeList(nparray):
-  str2ind_column = {}
-  ind2str_column = {}
+def tokenizeList(nparray, str2ind_column = {}, ind2str_column = {}):
+  _str2ind_column = str2ind_column
+  _ind2str_column = ind2str_column
   cnt = 0
   for x, val in np.ndenumerate(nparray):
-    if val not in str2ind_column:
-      str2ind_column[val] = cnt
-      ind2str_column[cnt] = val
+    if val not in _str2ind_column:
+      _str2ind_column[val] = cnt
+      _ind2str_column[cnt] = val
       cnt += 1
-    nparray[x] = str2ind_column[val]
-  return str2ind_column, ind2str_column
+    nparray[x] = _str2ind_column[val]
+  return _str2ind_column, _ind2str_column
 
 '''
   columnList: columns that are getting tokenized
 '''
-def tokenizeByColumn(npdatatable, columnList, name = None):
+def tokenizeByColumn(npdatatable, columnList, str2ind = [], ind2str = [], name = None):
   
-  str2ind = []
-  ind2str = []
+  _str2ind = str2ind
+  _ind2str = ind2str
 
-  for c in columnList:
-    str2ind_column, ind2str_column = tokenizeList(npdatatable[:,c])
-    str2ind.append(str2ind_column)
-    ind2str.append(ind2str_column)
+  #TODO add assert here to make sure 2 maps have the same dimension
+
+  if not _str2ind:
+    for c in columnList:
+      str2ind_column, ind2str_column = tokenizeList(npdatatable[:,c])
+      _str2ind.append(str2ind_column)
+      _ind2str.append(ind2str_column)
+  else:
+    lookup_ind = 0
+    for c in columnList:
+      tokenizeList(npdatatable[:,c], _str2ind[lookup_ind], _ind2str[lookup_ind])
 
   if name is not None:
     print name, str2ind
 
-  return str2ind, ind2str
+  return _str2ind, _ind2str
 
 
 
