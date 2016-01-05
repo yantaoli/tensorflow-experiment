@@ -42,8 +42,9 @@ def extract_csv(filename, hasHeader = True):
         data.append(row)
     return np.array(data), header
 
+# TODO support test datasets
 class UserDataSet(object):
-  def __init__(self, train_users, train_users_header, one_hot=False):
+  def __init__(self, train_users, train_users_header, test_set, test_set_header,one_hot=False):
     self._train_users = train_users
     self._train_users_header = train_users_header
 
@@ -114,11 +115,10 @@ def read_data_sets():
   AGE_GENDER_BKTS = 'age_gender_bkts.csv'
 
   train_users, train_header= extract_csv(TRAIN_USERS)
-  # process training data
-  data_sets.trainData = UserDataSet(train_users, train_header)
-
   test_users, test_headers = extract_csv(TEST_USERS)
-  data_sets.testData = UserDataSet(test_users, test_headers)
+  # process training data
+  data_sets.trainData = UserDataSet(train_users, train_header, test_users, test_headers)
+
 
   # data_sets.sessions, _ = extract_csv(SESSIONS)
   data_sets.countries, _ = extract_csv(COUNTRIES)
