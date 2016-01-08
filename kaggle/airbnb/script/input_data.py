@@ -23,7 +23,7 @@ def write_csv(filename, data):
 
     for x in range(data.shape[0]): 
     #for x in range(data.size):
-      writer.writerow(data[x, :].tolist())
+      writer.writerow(data[x].tolist())
 
   print('CSV data written' + PATH + filename)
 
