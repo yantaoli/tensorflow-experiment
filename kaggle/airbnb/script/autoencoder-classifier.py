@@ -101,11 +101,11 @@ def fill_feed_dict(data_set, inputs_pl, labels_pl):
   }
   return feed_dict
 
-def output_test(sess,label, inputs_placeholder,data_set):
+def output_test(sess,label, inputs_pl, test_set):
   """Run one round on the output, and optionally output to a csv
   """
   feed_dict = {
-    inputs_pl : data_set.input(),
+    inputs_pl : test_set,
   }
 
   outputArray = sess.run(label, feed_dict=feed_dict)
@@ -144,7 +144,7 @@ def run_training():
   # Get the sets of inputs and labels for training, validation
   data_sets = input_data.read_data_sets()
   trainData = data_sets.trainData
-  testData = data_sets.trainData
+  testData = data_sets.trainData.testInput()
 
   # Tell TensorFlow that the model will be built into the default Graph.
   with tf.Graph().as_default():
@@ -226,12 +226,6 @@ def run_training():
                 labels_placeholder,
                 trainData)
 
-        outputArray = output_test(sess,
-                label,
-                inputs_placeholder,
-                testData)
-
-        input_data.write_csv('testOutput.csv', outputArray)
         # Evaluate against the validation set.
         # print('Validation Data Eval:')
         # do_eval(sess,
@@ -246,6 +240,15 @@ def run_training():
         #         inputs_placeholder,
         #         labels_placeholder,
         #         data_sets.test)
+
+    # At max step
+    outputArray = output_test(sess,
+                label,
+                inputs_placeholder,
+                testData)
+
+    input_data.write_csv('testOutput.csv', outputArray)
+        
 
 def main(_):
   run_training()

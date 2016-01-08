@@ -54,6 +54,12 @@ class UserDataSet(object):
     self._num_tests = test_set.shape[0]
     self._test_total_dim = test_set.shape[1]
 
+    print("Training Samples:")
+    print(self._num_examples)
+    
+    print("Testing Samples")
+    print(self._num_tests)
+
     # Define set parameters
     self._input_dim = 15 # column 0 to 14
     self._output_dim = 1
@@ -64,13 +70,16 @@ class UserDataSet(object):
     if self._test_total_dim < self._total_dim:
       # resources at: http://stackoverflow.com/questions/8486294/how-to-add-an-extra-column-to-an-numpy-array
       numColumnToAppend = self._total_dim - self._test_total_dim
-      augmentedTestSet = np.c_[test_set, np.ones(self._num_tests,numColumnToAppend) * self._null_value]
+      augmentedTestSet = np.c_[test_set, np.ones((self._num_tests,numColumnToAppend)) * self._null_value]
     else:
       # to assert test dim should never be 
       augmentedTestSet = test_set
 
     # Augment the sets
     self._augmentedSet = np.r_[self._training_set ,augmentedTestSet]
+    self._total_sample = self._augmentedSet.shape[0]
+    print("Augmented Samples:")
+    print(self._total_sample)
 
     # tokenize + normalize
     self.str2ind, self.ind2str = input_util.tokenizeByColumn(self._augmentedSet,[4,6,8,9,10,11,12,13,14,15])
@@ -79,9 +88,13 @@ class UserDataSet(object):
     input_util.columnNormalizer(self._augmentedSet, [1,3], minVal = 0.0, maxVal = 10.0)
     input_util.columnNormalizer(self._augmentedSet, [2,5,7], minVal = 0.0, maxVal = 10.0)
 
-    self._input = self._augmentedSet[range(0,self._num_examples), range(1,15)].astype(float)
-    self._output = self._augmentedSet[range(0,self._num_examples), 15].astype(int)
-    self._testInput = self._augmentedSet[range(self._num_examples, self._num_examples + self._num_tests), range(1,15)].astype(float)
+    inputsArray = self._augmentedSet[:, range(1,15)].astype(float)
+    outputsArray = self._augmentedSet[:, 15].astype(int)
+
+    self._input = inputsArray[range(0,self._num_examples), :]
+    self._testInput = inputsArray[range(self._num_examples, self._total_sample), :]
+
+    self._output = outputsArray[range(0,self._num_examples)] # the data is 1D
 
     self._epochs_completed = 0
     self._index_in_epoch = 0
@@ -137,13 +150,13 @@ def read_data_sets():
     pass
   data_sets = DataSets()
 
-  training_set = 'training_set.csv'
+  TRAINING_SET = 'train_users.csv'
   TEST_USERS = 'test_users.csv'
   #SESSIONS = 'sessions.csv' # comment out because sessions data is too big to fit in python memory
   COUNTRIES = 'countries.csv'
   AGE_GENDER_BKTS = 'age_gender_bkts.csv'
 
-  training_set, train_header= extract_csv(training_set)
+  training_set, train_header= extract_csv(TRAINING_SET)
   test_users, test_headers = extract_csv(TEST_USERS)
 
   # TODO append test users after train users then perform normalizations

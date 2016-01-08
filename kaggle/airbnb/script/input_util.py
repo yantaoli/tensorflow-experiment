@@ -24,7 +24,6 @@ def convertToNum(nparray, columnList, default = 0.0):
   # for (x, y), val in np.ndenumerate(npSubArray):
   #   npSubArray[x,y] = num(val, default)
 
-
   return nparray
 
 '''
