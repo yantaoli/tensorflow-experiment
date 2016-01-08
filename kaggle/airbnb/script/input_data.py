@@ -21,9 +21,9 @@ def write_csv(filename, data):
     writer = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-    for x in range(data.get_shape().as_list()[0]): 
+    for x in range(data.shape[0]): 
     #for x in range(data.size):
-      writer.writerow([data[x]])
+      writer.writerow(data[x, :].tolist())
 
   print('CSV data written' + PATH + filename)
 
