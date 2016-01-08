@@ -108,16 +108,16 @@ class UserDataSet(object):
     return self._output
 
   @property
-  def testInput(self):
-    return self._testInput
-
-  @property
   def num_examples(self):
     return self._num_examples
 
   @property
   def epochs_completed(self):
     return self._epochs_completed
+
+  @property
+  def testInput(self):
+    return self._testInput
 
   def next_batch(self, batch_size):
     """Return the next `batch_size` examples from this data set."""
