@@ -38,7 +38,7 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
 
-flags.DEFINE_integer('max_steps', 2000, 'Number of steps to run trainer.')
+flags.DEFINE_integer('max_steps', 20000, 'Number of steps to run trainer.')
 flags.DEFINE_integer('verbose_steps', 200, 'Number of steps to return training loss.')
 flags.DEFINE_integer('checkpoint_steps', 1000, 'Number of steps to create a checkpoint.')
 
