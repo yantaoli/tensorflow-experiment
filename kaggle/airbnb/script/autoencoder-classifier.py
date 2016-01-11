@@ -38,7 +38,7 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.1, 'Initial learning rate.')
 
-flags.DEFINE_integer('max_steps', 20000, 'Number of steps to run trainer.')
+flags.DEFINE_integer('max_steps', 2000, 'Number of steps to run trainer.')
 flags.DEFINE_integer('verbose_steps', 200, 'Number of steps to return training loss.')
 flags.DEFINE_integer('checkpoint_steps', 1000, 'Number of steps to create a checkpoint.')
 
@@ -109,7 +109,9 @@ def output_test(sess,label, inputs_pl, test_set):
     inputs_pl : test_set,
   }
 
-  outputArray = sess.run(label, feed_dict=feed_dict)
+  outputArray = label.eval(feed_dict=feed_dict, session=sess)
+  #outputArray = sess.run(label, feed_dict=feed_dict) # this seems not working
+
   return outputArray
 
 def do_eval(sess,
