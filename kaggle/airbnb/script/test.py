@@ -56,12 +56,12 @@ print(result)
 sess.close()
 
 print("Test 2")
-sess = tf.InteractiveSession()
+sess2 = tf.InteractiveSession()
 # test 2, output from graph
-input_placeholder = tf.placeholder(tf.float32, shape=(3,2))
-biases = tf.constant(tf.zeros([2]),
+input_placeholder = tf.placeholder(tf.float32, shape=(None,2))
+biases = tf.zeros([2])
 hidden1 = input_placeholder + biases
-output = tf.argmax(input_placeholder, 0, name='output')
+output = tf.argmax(input_placeholder, 1, name='output')
 
 test_set_sample = np.array([[1,2],
                             [3,2],
@@ -73,9 +73,9 @@ feed_dict = {
 }
 
 #outputArray = label.eval(feed_dict=feed_dict, session=sess)
-outputArray1 = sess.run(hidden1, feed_dict=feed_dict) # this seems not working
-outputArray2 = sess.run(output, feed_dict=feed_dict) # this seems not working
+outputArray1 = sess2.run(hidden1, feed_dict=feed_dict) # this seems not working
+outputArray2 = sess2.run(output, feed_dict=feed_dict) # this seems not working
 print(outputArray1)
 print(outputArray2)
 
-sess.close()
+sess2.close()

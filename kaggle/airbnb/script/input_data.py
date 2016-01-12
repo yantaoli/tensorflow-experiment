@@ -24,7 +24,7 @@ def write_csv(filename, data):
     for x in range(data.shape[0]): 
     #for x in range(data.size):
       # debug
-      print(data[x])
+      # print(data[x])
       writer.writerow([data[x]]) # it is 1D array, thus no need to add [x, :].tolist()
 
   print('CSV data written' + PATH + filename)

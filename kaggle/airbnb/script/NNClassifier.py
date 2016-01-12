@@ -152,7 +152,7 @@ def output(logits):
     Args:
       logits: Logits tensor, float - [batch_size, NUM_CLASSES].
   """
-  label = tf.argmax(logits, 0, name='OutputLabel')
+  label = tf.argmax(logits, 1, name='OutputLabel')
   return label
 
 def evaluation(logits, labels):
