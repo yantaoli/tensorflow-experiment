@@ -108,7 +108,7 @@ def output_test(sess, label, inputs_pl, test_set):
   print("Outputing Test")
   
   "Debug test with small sample size"
-  test_set_sample = test_set(np.arange(3))
+  test_set_sample = test_set[np.arange(3)]
   print(test_set_sample)
 
   feed_dict = {
