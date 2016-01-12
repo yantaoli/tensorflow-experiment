@@ -37,7 +37,7 @@ from __future__ import division
 from __future__ import print_function
 
 import math
-
+import numpy as np
 import tensorflow.python.platform
 import tensorflow as tf
 # Build a dataflow graph.
@@ -51,3 +51,22 @@ sess = tf.Session()
 # Execute the graph and store the value that `e` represents in `result`.
 result = sess.run(e)
 print(result)
+
+# test 2, output from graph
+input_placeholder = tf.placeholder(tf.float32, shape=(None,2))
+labels_placeholder = tf.placeholder(tf.int32, shape=(None)) # None, 1
+
+output = tf.argmax(input_placeholder, 0, name='hidden')
+
+test_set_sample = np.array([[1,2],
+                            [3,2],
+                            [3,4]])
+print(test_set_sample)
+
+feed_dict = {
+  input_placeholder : test_set_sample,
+}
+
+#outputArray = label.eval(feed_dict=feed_dict, session=sess)
+outputArray = sess.run(output, feed_dict=feed_dict) # this seems not working
+print(outputArray)
