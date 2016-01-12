@@ -102,14 +102,17 @@ def fill_feed_dict(data_set, inputs_pl, labels_pl):
   }
   return feed_dict
 
-def output_test(sess,label, inputs_pl, test_set):
+def output_test(sess, label, inputs_pl, test_set):
   """Run one round on the output, and optionally output to a csv
   """
   print("Outputing Test")
-  print(test_set)
+  
+  "Debug test with small sample size"
+  test_set_sample = test_set(np.arange(10))
+  print(test_set_sample)
 
   feed_dict = {
-    inputs_pl : test_set,
+    inputs_pl : test_set_sample,
   }
 
   outputArray = label.eval(feed_dict=feed_dict, session=sess)
