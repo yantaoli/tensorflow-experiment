@@ -40,6 +40,8 @@ import math
 import numpy as np
 import tensorflow.python.platform
 import tensorflow as tf
+
+print("Test 1")
 # Build a dataflow graph.
 c = tf.constant([[1.0, 2.0], [3.0, 4.0]])
 d = tf.constant([[1.0, 1.0], [0.0, 1.0]])
@@ -53,10 +55,13 @@ result = sess.run(e)
 print(result)
 sess.close()
 
+print("Test 2")
 sess = tf.InteractiveSession()
 # test 2, output from graph
-input_placeholder = tf.placeholder(tf.float32, shape=(None,2))
-output = tf.argmax(input_placeholder, 0, name='hidden')
+input_placeholder = tf.placeholder(tf.float32, shape=(3,2))
+biases = tf.constant(tf.zeros([2]),
+hidden1 = input_placeholder + biases
+output = tf.argmax(input_placeholder, 0, name='output')
 
 test_set_sample = np.array([[1,2],
                             [3,2],
@@ -68,7 +73,9 @@ feed_dict = {
 }
 
 #outputArray = label.eval(feed_dict=feed_dict, session=sess)
-outputArray = sess.run(output, feed_dict=feed_dict) # this seems not working
-print(outputArray)
+outputArray1 = sess.run(hidden1, feed_dict=feed_dict) # this seems not working
+outputArray2 = sess.run(output, feed_dict=feed_dict) # this seems not working
+print(outputArray1)
+print(outputArray2)
 
 sess.close()
