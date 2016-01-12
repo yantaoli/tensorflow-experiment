@@ -105,11 +105,16 @@ def fill_feed_dict(data_set, inputs_pl, labels_pl):
 def output_test(sess,label, inputs_pl, test_set):
   """Run one round on the output, and optionally output to a csv
   """
+  print "Outputing Test"
+  print test_set
+
   feed_dict = {
     inputs_pl : test_set,
   }
 
   outputArray = label.eval(feed_dict=feed_dict, session=sess)
+  print outputArray
+
   #outputArray = sess.run(label, feed_dict=feed_dict) # this seems not working
 
   return outputArray
