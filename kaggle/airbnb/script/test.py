@@ -46,16 +46,16 @@ d = tf.constant([[1.0, 1.0], [0.0, 1.0]])
 e = tf.matmul(c, d)
 
 # Construct a `Session` to execut the graph.
-sess = tf.Session()
+sess = tf.InteractiveSession()
 
 # Execute the graph and store the value that `e` represents in `result`.
 result = sess.run(e)
 print(result)
+sess.close()
 
+sess = tf.InteractiveSession()
 # test 2, output from graph
 input_placeholder = tf.placeholder(tf.float32, shape=(None,2))
-labels_placeholder = tf.placeholder(tf.int32, shape=(None)) # None, 1
-
 output = tf.argmax(input_placeholder, 0, name='hidden')
 
 test_set_sample = np.array([[1,2],
@@ -70,3 +70,5 @@ feed_dict = {
 #outputArray = label.eval(feed_dict=feed_dict, session=sess)
 outputArray = sess.run(output, feed_dict=feed_dict) # this seems not working
 print(outputArray)
+
+sess.close()
